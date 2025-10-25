@@ -1,0 +1,45 @@
+{
+  "name": "duration-component",
+  "version": "1.0.1",
+  "description": "A web component that enables users to choose a time duration in hours, minutes, and seconds.",
+  "type": "module",
+  "main": "dist/duration-component.js",
+  "module": "dist/duration-component.js",
+  "types": "src/duration-component.d.ts",
+  "sideEffects": true,
+  "files": [
+    "dist/",
+    "src/duration-component.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/duration-component.js",
+      "types": "./src/duration-component.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "lit": "^3.1.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "web-components",
+    "lit",
+    "vite",
+    "duration",
+    "time",
+    "input",
+    "hours",
+    "minutes",
+    "seconds"
+  ],
+  "author": "Ali Asghar Torabi",
+  "license": "MIT"
+}

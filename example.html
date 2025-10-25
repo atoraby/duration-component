@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Duration Component - No Imports Needed</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .example {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Duration Component - Zero Configuration Usage</h1>
+    <p>
+      This demonstrates that the component works without any imports or
+      TypeScript declarations!
+    </p>
+
+    <div class="example">
+      <h2>Example 1: Basic Usage</h2>
+      <duration-component name="Alice"></duration-component>
+    </div>
+
+    <div class="example">
+      <h2>Example 2: Multiple Instances</h2>
+      <duration-component name="Bob"></duration-component>
+      <duration-component name="Charlie"></duration-component>
+    </div>
+
+    <div class="example">
+      <h2>Example 3: Default Name</h2>
+      <duration-component></duration-component>
+    </div>
+
+    <!-- Import the component - it auto-registers itself -->
+    <script type="module" src="./dist/duration-component.js"></script>
+  </body>
+</html>

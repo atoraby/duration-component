@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pure HTML/JS Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Pure HTML/JS Test</h1>
+      <p>
+        This page uses NO frameworks, NO TypeScript, NO build tools - just pure
+        HTML and JavaScript!
+      </p>
+
+      <div class="test-section">
+        <h3>Test 1: Basic Usage</h3>
+        <duration-component name="Pure HTML"></duration-component>
+      </div>
+
+      <div class="test-section">
+        <h3>Test 2: Multiple Components</h3>
+        <duration-component name="JavaScript"></duration-component>
+        <duration-component name="Web Components"></duration-component>
+      </div>
+
+      <div class="test-section">
+        <h3>Test 3: Default Name</h3>
+        <duration-component></duration-component>
+      </div>
+
+      <div class="test-section">
+        <h3>Test 4: Dynamic Creation</h3>
+        <button onclick="createComponent()">Create New Component</button>
+        <div id="dynamic-components"></div>
+      </div>
+    </div>
+
+    <!-- Import the component - it auto-registers itself -->
+    <script type="module" src="./dist/duration-component.js"></script>
+
+    <script>
+      // Pure JavaScript - no frameworks needed!
+      function createComponent() {
+        const container = document.getElementById("dynamic-components");
+        const component = document.createElement("duration-component");
+        component.setAttribute("name", "Dynamic " + Date.now());
+        container.appendChild(component);
+      }
+
+      // Test that the component is available
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log(
+          "Duration component available:",
+          customElements.get("duration-component")
+        );
+      });
+    </script>
+  </body>
+</html>
