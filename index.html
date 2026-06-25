@@ -33,6 +33,7 @@
     <h1>Lit Web Component Demo</h1>
     <p>This is a demonstration of a Lit web component built with Vite.</p>
 
+    <button onclick="removeRequired()">remove required</button>
     <form onsubmit="onSubmit(event)" id="form">
       <input type="text" name="name" placeholder="Name" />
       <duration-component
@@ -45,6 +46,10 @@
 
     <script type="module" src="/src/duration-component.js"></script>
     <script>
+      function removeRequired() {
+        const durationComponent = document.querySelector("[name='duration']");
+        durationComponent.removeAttribute("required");
+      }
       function onSubmit(event) {
         event.preventDefault();
         const formData = new FormData(form);

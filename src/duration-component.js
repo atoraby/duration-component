@@ -19,6 +19,7 @@ export class DurationComponent extends LitElement {
     minutes: { type: Number },
     seconds: { type: Number },
     _isValid: { type: Boolean, state: true },
+    _formDisabled: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -48,6 +49,12 @@ export class DurationComponent extends LitElement {
     this.minutes = 0;
     this.seconds = 0;
     this._isValid = true;
+    this._customValidityMessage = "";
+    this._skipNextValueSync = false;
+    this._defaultValue = undefined;
+    this._valueOnFocus = "";
+    this._hasFocus = false;
+    this._formDisabled = false;
 
     // Get ElementInternals for form association
     this._internals = this.attachInternals();
@@ -58,10 +65,56 @@ export class DurationComponent extends LitElement {
     if (!this.hasAttribute("tabindex")) {
       this.tabIndex = -1;
     }
+    if (this._defaultValue === undefined) {
+      this._defaultValue = this.getAttribute("value") ?? "";
+    }
     this._parseValue();
     this._validate();
     // Set initial form value
     this._internals.setFormValue(this.value);
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has("value")) {
+      if (this._skipNextValueSync) {
+        this._skipNextValueSync = false;
+      } else {
+        this._parseValue();
+        this._internals.setFormValue(this.value);
+      }
+    }
+
+    if (
+      changedProperties.has("value") ||
+      changedProperties.has("required") ||
+      changedProperties.has("min") ||
+      changedProperties.has("max")
+    ) {
+      this._validate();
+    }
+  }
+
+  formDisabledCallback(disabled) {
+    this._formDisabled = disabled;
+  }
+
+  get _isInputDisabled() {
+    return this.disabled || this._formDisabled;
+  }
+
+  _placeholderParts() {
+    if (!this.placeholder) {
+      return { hours: "", minutes: "", seconds: "" };
+    }
+    const parts = this.placeholder.split(":");
+    if (parts.length === 3) {
+      return {
+        hours: parts[0],
+        minutes: parts[1],
+        seconds: parts[2],
+      };
+    }
+    return { hours: this.placeholder, minutes: "", seconds: "" };
   }
 
   focus(options) {
@@ -76,23 +129,26 @@ export class DurationComponent extends LitElement {
   }
 
   render() {
+    const placeholders = this._placeholderParts();
     return html`
       <div
         class="duration-input"
-        ?disabled=${this.disabled}
+        ?disabled=${this._isInputDisabled}
         ?readonly=${this.readonly}
+        @focusin=${this._onContainerFocus}
+        @focusout=${this._onContainerBlur}
       >
         <input
           part="hours-input"
           type="number"
+          aria-label="Hours"
           .value=${this.hours}
+          placeholder=${placeholders.hours}
           min="0"
           max="23"
-          ?disabled=${this.disabled}
+          ?disabled=${this._isInputDisabled}
           ?readonly=${this.readonly}
           @input=${this._onHoursChange}
-          @blur=${this._onBlur}
-          @focus=${this._onFocus}
         />
 
         <span class="separator">:</span>
@@ -100,14 +156,14 @@ export class DurationComponent extends LitElement {
         <input
           part="minutes-input"
           type="number"
+          aria-label="Minutes"
           .value=${this.minutes}
+          placeholder=${placeholders.minutes}
           min="0"
           max="59"
-          ?disabled=${this.disabled}
+          ?disabled=${this._isInputDisabled}
           ?readonly=${this.readonly}
           @input=${this._onMinutesChange}
-          @blur=${this._onBlur}
-          @focus=${this._onFocus}
         />
 
         <span class="separator">:</span>
@@ -115,38 +171,90 @@ export class DurationComponent extends LitElement {
         <input
           part="seconds-input"
           type="number"
+          aria-label="Seconds"
           .value=${this.seconds}
+          placeholder=${placeholders.seconds}
           min="0"
           max="59"
-          ?disabled=${this.disabled}
+          ?disabled=${this._isInputDisabled}
           ?readonly=${this.readonly}
           @input=${this._onSecondsChange}
-          @blur=${this._onBlur}
-          @focus=${this._onFocus}
         />
       </div>
     `;
   }
 
   _parseValue() {
-    if (this.value) {
-      const parts = this.value.split(":");
-      if (parts.length === 3) {
-        this.hours = parseInt(parts[0]) || 0;
-        this.minutes = parseInt(parts[1]) || 0;
-        this.seconds = parseInt(parts[2]) || 0;
-      }
+    if (!this.value) {
+      this.hours = 0;
+      this.minutes = 0;
+      this.seconds = 0;
+      return;
+    }
+
+    const parts = this.value.split(":");
+    if (parts.length === 3) {
+      this.hours = Math.max(0, Math.min(23, parseInt(parts[0], 10) || 0));
+      this.minutes = Math.max(0, Math.min(59, parseInt(parts[1], 10) || 0));
+      this.seconds = Math.max(0, Math.min(59, parseInt(parts[2], 10) || 0));
+    } else {
+      this.hours = 0;
+      this.minutes = 0;
+      this.seconds = 0;
+    }
+
+    const normalized = this._formatDuration(
+      this.hours,
+      this.minutes,
+      this.seconds
+    );
+    if (normalized !== this.value) {
+      this._skipNextValueSync = true;
+      this.value = normalized;
     }
   }
 
+  _formatDuration(hours, minutes, seconds) {
+    return `${this._pad(hours)}:${this._pad(minutes)}:${this._pad(seconds)}`;
+  }
+
+  _parseDurationToSeconds(durationStr) {
+    if (!durationStr) {
+      return null;
+    }
+    const parts = durationStr.split(":");
+    if (parts.length !== 3) {
+      return null;
+    }
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    const seconds = parseInt(parts[2], 10);
+    if (
+      isNaN(hours) ||
+      isNaN(minutes) ||
+      isNaN(seconds) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59 ||
+      seconds < 0 ||
+      seconds > 59
+    ) {
+      return null;
+    }
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+
   _updateValue() {
-    const newValue = `${this._pad(this.hours)}:${this._pad(
-      this.minutes
-    )}:${this._pad(this.seconds)}`;
+    const newValue = this._formatDuration(
+      this.hours,
+      this.minutes,
+      this.seconds
+    );
     if (newValue !== this.value) {
+      this._skipNextValueSync = true;
       this.value = newValue;
-      this._dispatchChangeEvent();
-      // Update form value for FormData
+      this._dispatchInputEvent();
       this._internals.setFormValue(this.value);
     }
   }
@@ -174,55 +282,78 @@ export class DurationComponent extends LitElement {
   }
 
   _validate() {
-    const currentValue = `${this._pad(this.hours)}:${this._pad(
-      this.minutes
-    )}:${this._pad(this.seconds)}`;
+    const currentValue = this._formatDuration(
+      this.hours,
+      this.minutes,
+      this.seconds
+    );
+    const currentSeconds = this._parseDurationToSeconds(currentValue);
+    const minSeconds = this._parseDurationToSeconds(this.min);
+    const maxSeconds = this._parseDurationToSeconds(this.max);
 
-    let isValid = true;
+    const valueMissing = this.required && currentValue === "00:00:00";
+    const rangeUnderflow =
+      minSeconds !== null &&
+      currentSeconds !== null &&
+      currentSeconds < minSeconds;
+    const rangeOverflow =
+      maxSeconds !== null &&
+      currentSeconds !== null &&
+      currentSeconds > maxSeconds;
+    const customError = !!this._customValidityMessage;
+
     let validityMessage = "";
-
-    if (this.required && currentValue === "00:00:00") {
-      isValid = false;
+    if (customError) {
+      validityMessage = this._customValidityMessage;
+    } else if (valueMissing) {
       validityMessage = "Duration is required";
-    }
-
-    if (this.min && currentValue < this.min) {
-      isValid = false;
+    } else if (rangeUnderflow) {
       validityMessage = `Duration must be at least ${this.min}`;
-    }
-
-    if (this.max && currentValue > this.max) {
-      isValid = false;
+    } else if (rangeOverflow) {
       validityMessage = `Duration must be at most ${this.max}`;
     }
 
-    this._isValid = isValid;
+    this._isValid =
+      !valueMissing && !rangeUnderflow && !rangeOverflow && !customError;
     this._internals.setValidity(
       {
-        valueMissing: this.required && currentValue === "00:00:00",
-        rangeUnderflow: this.min && currentValue < this.min,
-        rangeOverflow: this.max && currentValue > this.max,
+        valueMissing,
+        rangeUnderflow,
+        rangeOverflow,
+        customError,
       },
       validityMessage
     );
   }
 
-  _onFocus() {
+  _onContainerFocus() {
+    if (this._hasFocus) {
+      return;
+    }
+    this._hasFocus = true;
+    this._valueOnFocus = this.value;
     this.dispatchEvent(new CustomEvent("focus", { bubbles: true }));
   }
 
-  _onBlur() {
+  _onContainerBlur(e) {
+    const next = e.relatedTarget;
+    if (next && this.renderRoot.contains(next)) {
+      return;
+    }
+    this._hasFocus = false;
     this._validate();
+    if (this.value !== this._valueOnFocus) {
+      this.dispatchEvent(
+        new CustomEvent("change", {
+          bubbles: true,
+          detail: { value: this.value },
+        })
+      );
+    }
     this.dispatchEvent(new CustomEvent("blur", { bubbles: true }));
   }
 
-  _dispatchChangeEvent() {
-    this.dispatchEvent(
-      new CustomEvent("change", {
-        bubbles: true,
-        detail: { value: this.value },
-      })
-    );
+  _dispatchInputEvent() {
     this.dispatchEvent(
       new CustomEvent("input", {
         bubbles: true,
@@ -248,7 +379,8 @@ export class DurationComponent extends LitElement {
   }
 
   setCustomValidity(message) {
-    this._internals.setValidity({ customError: !!message }, message);
+    this._customValidityMessage = message;
+    this._validate();
   }
 
   get validity() {
@@ -261,12 +393,11 @@ export class DurationComponent extends LitElement {
 
   // Form reset support
   formResetCallback() {
-    this.value = "";
-    this.hours = 0;
-    this.minutes = 0;
-    this.seconds = 0;
-    this._isValid = true;
-    this._internals.setFormValue("");
+    this._skipNextValueSync = true;
+    this.value = this._defaultValue ?? "";
+    this._parseValue();
+    this._validate();
+    this._internals.setFormValue(this.value);
   }
 }
 

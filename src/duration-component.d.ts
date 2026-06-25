@@ -17,6 +17,7 @@ export class DurationComponent extends LitElement {
   checkValidity(): boolean;
   reportValidity(): boolean;
   setCustomValidity(message: string): void;
+  formDisabledCallback(disabled: boolean): void;
   get validity(): ValidityState;
   get validationMessage(): string;
 }
