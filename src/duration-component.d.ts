@@ -13,6 +13,7 @@ export class DurationComponent extends LitElement {
   max: string;
 
   // Form validation methods
+  focus(options?: FocusOptions): void;
   checkValidity(): boolean;
   reportValidity(): boolean;
   setCustomValidity(message: string): void;

@@ -55,10 +55,24 @@ export class DurationComponent extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    if (!this.hasAttribute('tabindex')) {
+      this.tabIndex = -1;
+    }
     this._parseValue();
     this._validate();
     // Set initial form value
     this._internals.setFormValue(this.value);
+  }
+
+  focus(options) {
+    this._focusFirstInput(options);
+  }
+
+  _focusFirstInput(options) {
+    const input = this.renderRoot?.querySelector(
+      'input:not([disabled]):not([readonly])'
+    );
+    input?.focus(options);
   }
 
   render() {
@@ -209,7 +223,12 @@ export class DurationComponent extends LitElement {
 
   reportValidity() {
     this._validate();
-    return this._internals.reportValidity();
+    const valid = this._internals.checkValidity();
+    if (!valid) {
+      this._internals.reportValidity();
+      this._focusFirstInput();
+    }
+    return valid;
   }
 
   setCustomValidity(message) {
