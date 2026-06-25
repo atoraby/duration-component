@@ -1,6 +1,6 @@
 {
   "name": "duration-component",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A web component that enables users to choose a time duration in hours, minutes, and seconds.",
   "repository": {
     "type": "git",
