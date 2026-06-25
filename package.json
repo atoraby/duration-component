@@ -2,6 +2,14 @@
   "name": "duration-component",
   "version": "1.0.2",
   "description": "A web component that enables users to choose a time duration in hours, minutes, and seconds.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atoraby/duration-component.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atoraby/duration-component/issues"
+  },
+  "homepage": "https://github.com/atoraby/duration-component#readme",
   "type": "module",
   "main": "dist/duration-component.js",
   "module": "dist/duration-component.js",
