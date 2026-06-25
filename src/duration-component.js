@@ -1,8 +1,8 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from "lit";
 
 export class DurationComponent extends LitElement {
   static formAssociated = true;
-  
+
   static properties = {
     // Form input properties
     value: { type: String, reflect: true },
@@ -13,12 +13,12 @@ export class DurationComponent extends LitElement {
     placeholder: { type: String, reflect: true },
     min: { type: String, reflect: true },
     max: { type: String, reflect: true },
-    
+
     // Internal state
     hours: { type: Number },
     minutes: { type: Number },
     seconds: { type: Number },
-    _isValid: { type: Boolean, state: true }
+    _isValid: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -35,27 +35,27 @@ export class DurationComponent extends LitElement {
 
   constructor() {
     super();
-    this.value = '';
-    this.name = '';
+    this.value = "";
+    this.name = "";
     this.required = false;
     this.disabled = false;
     this.readonly = false;
-    this.placeholder = '';
-    this.min = '00:00:00';
-    this.max = '23:59:59';
-    
+    this.placeholder = "";
+    this.min = "00:00:00";
+    this.max = "23:59:59";
+
     this.hours = 0;
     this.minutes = 0;
     this.seconds = 0;
     this._isValid = true;
-    
+
     // Get ElementInternals for form association
     this._internals = this.attachInternals();
   }
 
   connectedCallback() {
     super.connectedCallback();
-    if (!this.hasAttribute('tabindex')) {
+    if (!this.hasAttribute("tabindex")) {
       this.tabIndex = -1;
     }
     this._parseValue();
@@ -70,62 +70,67 @@ export class DurationComponent extends LitElement {
 
   _focusFirstInput(options) {
     const input = this.renderRoot?.querySelector(
-      'input:not([disabled]):not([readonly])'
+      "input:not([disabled]):not([readonly])"
     );
     input?.focus(options);
   }
 
   render() {
     return html`
-      <div class="duration-input" 
-           ?disabled=${this.disabled}
-           ?readonly=${this.readonly}>
-          <input 
-            type="number" 
-            .value=${this.hours}
-            min="0" 
-            max="23"
-            ?disabled=${this.disabled}
-            ?readonly=${this.readonly}
-            @input=${this._onHoursChange}
-            @blur=${this._onBlur}
-            @focus=${this._onFocus}>
-        
-        
-        <span class="separator">:</span>
-        
+      <div
+        class="duration-input"
+        ?disabled=${this.disabled}
+        ?readonly=${this.readonly}
+      >
+        <input
+          part="hours-input"
+          type="number"
+          .value=${this.hours}
+          min="0"
+          max="23"
+          ?disabled=${this.disabled}
+          ?readonly=${this.readonly}
+          @input=${this._onHoursChange}
+          @blur=${this._onBlur}
+          @focus=${this._onFocus}
+        />
 
-          <input 
-            type="number" 
-            .value=${this.minutes}
-            min="0" 
-            max="59"
-            ?disabled=${this.disabled}
-            ?readonly=${this.readonly}
-            @input=${this._onMinutesChange}
-            @blur=${this._onBlur}
-            @focus=${this._onFocus}>
-        
         <span class="separator">:</span>
-        
-          <input 
-            type="number" 
-            .value=${this.seconds}
-            min="0" 
-            max="59"
-            ?disabled=${this.disabled}
-            ?readonly=${this.readonly}
-            @input=${this._onSecondsChange}
-            @blur=${this._onBlur}
-            @focus=${this._onFocus}>
-        
+
+        <input
+          part="minutes-input"
+          type="number"
+          .value=${this.minutes}
+          min="0"
+          max="59"
+          ?disabled=${this.disabled}
+          ?readonly=${this.readonly}
+          @input=${this._onMinutesChange}
+          @blur=${this._onBlur}
+          @focus=${this._onFocus}
+        />
+
+        <span class="separator">:</span>
+
+        <input
+          part="seconds-input"
+          type="number"
+          .value=${this.seconds}
+          min="0"
+          max="59"
+          ?disabled=${this.disabled}
+          ?readonly=${this.readonly}
+          @input=${this._onSecondsChange}
+          @blur=${this._onBlur}
+          @focus=${this._onFocus}
+        />
       </div>
     `;
   }
 
   _parseValue() {
     if (this.value) {
-      const parts = this.value.split(':');
+      const parts = this.value.split(":");
       if (parts.length === 3) {
         this.hours = parseInt(parts[0]) || 0;
         this.minutes = parseInt(parts[1]) || 0;
@@ -135,7 +140,9 @@ export class DurationComponent extends LitElement {
   }
 
   _updateValue() {
-    const newValue = `${this._pad(this.hours)}:${this._pad(this.minutes)}:${this._pad(this.seconds)}`;
+    const newValue = `${this._pad(this.hours)}:${this._pad(
+      this.minutes
+    )}:${this._pad(this.seconds)}`;
     if (newValue !== this.value) {
       this.value = newValue;
       this._dispatchChangeEvent();
@@ -145,7 +152,7 @@ export class DurationComponent extends LitElement {
   }
 
   _pad(num) {
-    return num.toString().padStart(2, '0');
+    return num.toString().padStart(2, "0");
   }
 
   _onHoursChange(e) {
@@ -167,52 +174,61 @@ export class DurationComponent extends LitElement {
   }
 
   _validate() {
-    const currentValue = `${this._pad(this.hours)}:${this._pad(this.minutes)}:${this._pad(this.seconds)}`;
-    
+    const currentValue = `${this._pad(this.hours)}:${this._pad(
+      this.minutes
+    )}:${this._pad(this.seconds)}`;
+
     let isValid = true;
-    let validityMessage = '';
-    
-    if (this.required && currentValue === '00:00:00') {
+    let validityMessage = "";
+
+    if (this.required && currentValue === "00:00:00") {
       isValid = false;
-      validityMessage = 'Duration is required';
+      validityMessage = "Duration is required";
     }
-    
+
     if (this.min && currentValue < this.min) {
       isValid = false;
       validityMessage = `Duration must be at least ${this.min}`;
     }
-    
+
     if (this.max && currentValue > this.max) {
       isValid = false;
       validityMessage = `Duration must be at most ${this.max}`;
     }
-    
+
     this._isValid = isValid;
-    this._internals.setValidity({ 
-      valueMissing: this.required && currentValue === '00:00:00',
-      rangeUnderflow: this.min && currentValue < this.min,
-      rangeOverflow: this.max && currentValue > this.max
-    }, validityMessage);
+    this._internals.setValidity(
+      {
+        valueMissing: this.required && currentValue === "00:00:00",
+        rangeUnderflow: this.min && currentValue < this.min,
+        rangeOverflow: this.max && currentValue > this.max,
+      },
+      validityMessage
+    );
   }
 
   _onFocus() {
-    this.dispatchEvent(new CustomEvent('focus', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent("focus", { bubbles: true }));
   }
 
   _onBlur() {
     this._validate();
-    this.dispatchEvent(new CustomEvent('blur', { bubbles: true }));
+    this.dispatchEvent(new CustomEvent("blur", { bubbles: true }));
   }
 
   _dispatchChangeEvent() {
-    this.dispatchEvent(new CustomEvent('change', { 
-      bubbles: true, 
-      detail: { value: this.value }
-    }));
-    this.dispatchEvent(new CustomEvent('input', { 
-      bubbles: true, 
-      detail: { value: this.value }
-    }));
+    this.dispatchEvent(
+      new CustomEvent("change", {
+        bubbles: true,
+        detail: { value: this.value },
+      })
+    );
+    this.dispatchEvent(
+      new CustomEvent("input", {
+        bubbles: true,
+        detail: { value: this.value },
+      })
+    );
   }
 
   // Form validation methods
@@ -245,13 +261,13 @@ export class DurationComponent extends LitElement {
 
   // Form reset support
   formResetCallback() {
-    this.value = '';
+    this.value = "";
     this.hours = 0;
     this.minutes = 0;
     this.seconds = 0;
     this._isValid = true;
-    this._internals.setFormValue('');
+    this._internals.setFormValue("");
   }
 }
 
-customElements.define('duration-component', DurationComponent);
+customElements.define("duration-component", DurationComponent);
