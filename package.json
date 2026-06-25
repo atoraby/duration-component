@@ -1,6 +1,6 @@
 {
   "name": "duration-component",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A web component that enables users to choose a time duration in hours, minutes, and seconds.",
   "type": "module",
   "main": "dist/duration-component.js",
